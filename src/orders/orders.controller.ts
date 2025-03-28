@@ -1,25 +1,74 @@
-// src/orders/orders.controller.ts
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 
 /**
- * Crear un nuevo pedido.
- * Endpoint: POST /orders
+ * @swagger
+ * components:
+ *   schemas:
+ *     Order:
+ *       type: object
+ *       required:
+ *         - menu_id
+ *         - cantidad
+ *         - usuario_id
+ *         - restaurante_id
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The auto-generated id of the order
+ *         menu_id:
+ *           type: integer
+ *           description: The ID of the menu item ordered
+ *         cantidad:
+ *           type: integer
+ *           description: The quantity ordered
+ *         usuario_id:
+ *           type: integer
+ *           description: The ID of the user placing the order
+ *         restaurante_id:
+ *           type: integer
+ *           description: The ID of the restaurant
+ */
+
+/**
+ * @swagger
+ * /orders:
+ *   post:
+ *     summary: Create a new order
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - menu_id
+ *               - cantidad
+ *               - restaurante_id
+ *             properties:
+ *               menu_id:
+ *                 type: integer
+ *               cantidad:
+ *                 type: integer
+ *               restaurante_id:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Order created successfully
+ *       500:
+ *         description: Server error
  */
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { menu_id, cantidad, restaurante_id } = req.body;
     const userId = (req as any).user?.id;
-    if (!userId) {
-      res.status(401).json({ message: 'Usuario no autenticado' });
-      return;
-    }
     
-    const { reserva_id, menu_id, cantidad } = req.body;
-    
-    // Se puede agregar validación extra (por ejemplo, verificar existencia de reserva o menú)
     const result = await pool.query(
-      'INSERT INTO pedidos (usuario_id, reserva_id, menu_id, cantidad) VALUES ($1, $2, $3, $4) RETURNING *',
-      [userId, reserva_id || null, menu_id, cantidad]
+      'INSERT INTO pedidos (menu_id, cantidad, usuario_id, restaurante_id) VALUES ($1, $2, $3, $4) RETURNING *',
+      [menu_id, cantidad, userId, restaurante_id]
     );
     
     res.status(201).json({ message: 'Pedido creado', order: result.rows[0] });
@@ -30,8 +79,34 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
- * Obtener detalles de un pedido.
- * Endpoint: GET /orders/:id
+ * @swagger
+ * /orders/{id}:
+ *   get:
+ *     summary: Get an order by ID
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     responses:
+ *       200:
+ *         description: Order details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 order:
+ *                   $ref: '#/components/schemas/Order'
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Server error
  */
 export const getOrderById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -51,17 +126,49 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
 };
 
 /**
- * Actualizar un pedido.
- * Endpoint: PUT /orders/:id
+ * @swagger
+ * /orders/{id}:
+ *   put:
+ *     summary: Update an order
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cantidad
+ *             properties:
+ *               cantidad:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Order updated successfully
+ *       403:
+ *         description: Forbidden - No permission to update this order
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Server error
  */
 export const updateOrder = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { id } = req.params;
+    const { cantidad } = req.body;
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
-    const { id } = req.params;
-    const { reserva_id, menu_id, cantidad } = req.body;
     
-    // Primero, verificamos que el pedido exista y obtenemos su creador.
+    // Verificar que el pedido exista
     const existing = await pool.query('SELECT * FROM pedidos WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
       res.status(404).json({ message: 'Pedido no encontrado' });
@@ -69,15 +176,16 @@ export const updateOrder = async (req: Request, res: Response): Promise<void> =>
     }
     
     const order = existing.rows[0];
-    // Solo el creador del pedido o un admin pueden actualizar.
+    
+    // Solo el dueño del pedido o un admin puede actualizarlo
     if (userRole !== 'admin' && order.usuario_id !== userId) {
       res.status(403).json({ message: 'No tienes permisos para actualizar este pedido' });
       return;
     }
     
     const result = await pool.query(
-      'UPDATE pedidos SET reserva_id = $1, menu_id = $2, cantidad = $3 WHERE id = $4 RETURNING *',
-      [reserva_id || null, menu_id, cantidad, id]
+      'UPDATE pedidos SET cantidad = $1 WHERE id = $2 RETURNING *',
+      [cantidad, id]
     );
     
     res.status(200).json({ message: 'Pedido actualizado', order: result.rows[0] });
@@ -88,16 +196,37 @@ export const updateOrder = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
- * Eliminar un pedido.
- * Endpoint: DELETE /orders/:id
+ * @swagger
+ * /orders/{id}:
+ *   delete:
+ *     summary: Delete an order
+ *     tags: [Orders]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Order ID
+ *     responses:
+ *       200:
+ *         description: Order deleted successfully
+ *       403:
+ *         description: Forbidden - No permission to delete this order
+ *       404:
+ *         description: Order not found
+ *       500:
+ *         description: Server error
  */
 export const deleteOrder = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { id } = req.params;
     const userId = (req as any).user?.id;
     const userRole = (req as any).user?.role;
-    const { id } = req.params;
     
-    // Verificar que el pedido exista.
+    // Verificar que el pedido exista
     const existing = await pool.query('SELECT * FROM pedidos WHERE id = $1', [id]);
     if (existing.rows.length === 0) {
       res.status(404).json({ message: 'Pedido no encontrado' });
@@ -105,7 +234,8 @@ export const deleteOrder = async (req: Request, res: Response): Promise<void> =>
     }
     
     const order = existing.rows[0];
-    // Solo el creador o un admin pueden eliminar el pedido.
+    
+    // Solo el dueño del pedido o un admin puede eliminarlo
     if (userRole !== 'admin' && order.usuario_id !== userId) {
       res.status(403).json({ message: 'No tienes permisos para eliminar este pedido' });
       return;

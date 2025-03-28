@@ -6,6 +6,40 @@ import { pool } from '../config/db';
 
 dotenv.config();
 
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 format: password
+ *               role:
+ *                 type: string
+ *                 enum: [cliente, admin]
+ *                 default: cliente
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input data
+ *       500:
+ *         description: Server error
+ */
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { email, password, role } = req.body;
 
@@ -33,6 +67,45 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login a user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *       401:
+ *         description: Invalid credentials
+ *       500:
+ *         description: Server error
+ */
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 

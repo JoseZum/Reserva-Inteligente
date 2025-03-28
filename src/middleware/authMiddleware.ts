@@ -1,22 +1,40 @@
-  import { Request, Response, NextFunction } from 'express';
-  import jwt from 'jsonwebtoken';
-  import dotenv from 'dotenv';
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 
-  dotenv.config();
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 
-  export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-    const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      res.status(401).json({ message: 'Token no proporcionado' });
+/**
+ * Authentication middleware
+ * Verifica el token y añade información de usuario
+ */
+export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ message: 'No token provided' });
       return;
     }
-
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-      (req as any).user = decoded;
-      next();
-    } catch {
-      res.status(401).json({ message: 'Token inválido' });
-    }
-  };
+    
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test_secret') as any;
+    
+    (req as any).user = {
+      id: decoded.id,
+      role: decoded.role
+    };
+    
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};

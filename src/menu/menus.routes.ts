@@ -1,5 +1,3 @@
-// src/menus/menus.routes.ts
-
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { getMenuById, updateMenu, deleteMenu } from './menus.controller';

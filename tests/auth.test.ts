@@ -1,4 +1,3 @@
-// tests/auth.test.ts
 import request from 'supertest';
 import app from '../src/index'; // Asegúrate de que tu app esté exportada correctamente (ver ejemplo en app.ts)
 import { pool } from '../src/config/db';

@@ -1,11 +1,67 @@
-// src/menus/menus.controller.ts
-
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 
 /**
- * Crear un menú para un restaurante.
- * Endpoint: POST /restaurants/:id/menus
+ * @swagger
+ * components:
+ *   schemas:
+ *     Menu:
+ *       type: object
+ *       required:
+ *         - platillo
+ *         - precio
+ *         - restaurante_id
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The auto-generated id of the menu item
+ *         platillo:
+ *           type: string
+ *           description: The name of the dish
+ *         precio:
+ *           type: number
+ *           format: float
+ *           description: The price of the dish
+ *         restaurante_id:
+ *           type: integer
+ *           description: The ID of the restaurant this menu belongs to
+ */
+
+/**
+ * @swagger
+ * /restaurants/{id}/menus:
+ *   post:
+ *     summary: Create a menu item for a restaurant
+ *     tags: [Menus]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Restaurant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - platillo
+ *               - precio
+ *             properties:
+ *               platillo:
+ *                 type: string
+ *               precio:
+ *                 type: number
+ *                 format: float
+ *     responses:
+ *       201:
+ *         description: Menu item created successfully
+ *       500:
+ *         description: Server error
  */
 export const createMenu = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -26,8 +82,32 @@ export const createMenu = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Listar todos los menús de un restaurante.
- * Endpoint: GET /restaurants/:id/menus
+ * @swagger
+ * /restaurants/{id}/menus:
+ *   get:
+ *     summary: Get all menu items for a restaurant
+ *     tags: [Menus]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: List of menu items
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 menus:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Menu'
+ *       500:
+ *         description: Server error
  */
 export const getMenusByRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -41,8 +121,32 @@ export const getMenusByRestaurant = async (req: Request, res: Response): Promise
 };
 
 /**
- * Obtener detalles de un menú específico.
- * Endpoint: GET /menus/:id
+ * @swagger
+ * /menus/{id}:
+ *   get:
+ *     summary: Get a menu item by ID
+ *     tags: [Menus]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Menu ID
+ *     responses:
+ *       200:
+ *         description: Menu item details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 menu:
+ *                   $ref: '#/components/schemas/Menu'
+ *       404:
+ *         description: Menu item not found
+ *       500:
+ *         description: Server error
  */
 export const getMenuById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -60,8 +164,41 @@ export const getMenuById = async (req: Request, res: Response): Promise<void> =>
 };
 
 /**
- * Actualizar un menú (solo admin).
- * Endpoint: PUT /menus/:id
+ * @swagger
+ * /menus/{id}:
+ *   put:
+ *     summary: Update a menu item (admin only)
+ *     tags: [Menus]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Menu ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               platillo:
+ *                 type: string
+ *               precio:
+ *                 type: number
+ *                 format: float
+ *     responses:
+ *       200:
+ *         description: Menu item updated successfully
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Menu item not found
+ *       500:
+ *         description: Server error
  */
 export const updateMenu = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -92,8 +229,29 @@ export const updateMenu = async (req: Request, res: Response): Promise<void> => 
 };
 
 /**
- * Eliminar un menú (solo admin).
- * Endpoint: DELETE /menus/:id
+ * @swagger
+ * /menus/{id}:
+ *   delete:
+ *     summary: Delete a menu item (admin only)
+ *     tags: [Menus]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Menu ID
+ *     responses:
+ *       200:
+ *         description: Menu item deleted successfully
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Menu item not found
+ *       500:
+ *         description: Server error
  */
 export const deleteMenu = async (req: Request, res: Response): Promise<void> => {
   try {

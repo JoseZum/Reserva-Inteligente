@@ -1,4 +1,3 @@
-// src/reservations/reservations.routes.ts
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { createReservation, deleteReservation } from './reservations.controller';

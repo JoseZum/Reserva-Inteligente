@@ -1,11 +1,56 @@
-// src/restaurants/restaurants.controller.ts
-
 import { Request, Response } from 'express';
 import { pool } from '../config/db';
 
 /**
- * @desc Crear un nuevo restaurante (solo admin)
- * @route POST /restaurants
+ * @swagger
+ * components:
+ *   schemas:
+ *     Restaurant:
+ *       type: object
+ *       required:
+ *         - nombre
+ *         - direccion
+ *       properties:
+ *         id:
+ *           type: integer
+ *           description: The auto-generated id of the restaurant
+ *         nombre:
+ *           type: string
+ *           description: The name of the restaurant
+ *         direccion:
+ *           type: string
+ *           description: The address of the restaurant
+ */
+
+/**
+ * @swagger
+ * /restaurants:
+ *   post:
+ *     summary: Create a new restaurant (admin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - direccion
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Restaurant created successfully
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       500:
+ *         description: Server error
  */
 export const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -33,8 +78,25 @@ export const createRestaurant = async (req: Request, res: Response): Promise<voi
 };
 
 /**
- * @desc Listar todos los restaurantes (público)
- * @route GET /restaurants
+ * @swagger
+ * /restaurants:
+ *   get:
+ *     summary: Get all restaurants
+ *     tags: [Restaurants]
+ *     responses:
+ *       200:
+ *         description: List of all restaurants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 restaurants:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Restaurant'
+ *       500:
+ *         description: Server error
  */
 export const getAllRestaurants = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -47,8 +109,32 @@ export const getAllRestaurants = async (req: Request, res: Response): Promise<vo
 };
 
 /**
- * @desc Obtener un restaurante por ID (público)
- * @route GET /restaurants/:id
+ * @swagger
+ * /restaurants/{id}:
+ *   get:
+ *     summary: Get a restaurant by ID
+ *     tags: [Restaurants]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: Restaurant details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 restaurant:
+ *                   $ref: '#/components/schemas/Restaurant'
+ *       404:
+ *         description: Restaurant not found
+ *       500:
+ *         description: Server error
  */
 export const getRestaurantById = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -68,8 +154,40 @@ export const getRestaurantById = async (req: Request, res: Response): Promise<vo
 };
 
 /**
- * @desc Actualizar un restaurante (solo admin)
- * @route PUT /restaurants/:id
+ * @swagger
+ * /restaurants/{id}:
+ *   put:
+ *     summary: Update a restaurant (admin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Restaurant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Restaurant updated successfully
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Restaurant not found
+ *       500:
+ *         description: Server error
  */
 export const updateRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -103,8 +221,29 @@ export const updateRestaurant = async (req: Request, res: Response): Promise<voi
 };
 
 /**
- * @desc Eliminar un restaurante (solo admin)
- * @route DELETE /restaurants/:id
+ * @swagger
+ * /restaurants/{id}:
+ *   delete:
+ *     summary: Delete a restaurant (admin only)
+ *     tags: [Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Restaurant ID
+ *     responses:
+ *       200:
+ *         description: Restaurant deleted successfully
+ *       403:
+ *         description: Forbidden - Admin access required
+ *       404:
+ *         description: Restaurant not found
+ *       500:
+ *         description: Server error
  */
 export const deleteRestaurant = async (req: Request, res: Response): Promise<void> => {
   try {

@@ -1,4 +1,3 @@
-// src/orders/orders.routes.ts
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { createOrder, getOrderById, updateOrder, deleteOrder } from './orders.controller';

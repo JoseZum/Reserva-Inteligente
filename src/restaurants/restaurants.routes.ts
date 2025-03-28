@@ -1,5 +1,3 @@
-// src/restaurants/restaurants.routes.ts
-
 import { Router } from 'express';
 import { authMiddleware } from '../middleware/authMiddleware';
 import {

@@ -1,4 +1,3 @@
-// src/index.ts
 import express from 'express';
 import dotenv from 'dotenv';
 import authRoutes from './auth/auth.routes';
@@ -7,6 +6,7 @@ import restaurantRoutes from './restaurants/restaurants.routes';
 import menuRoutes from './menu/menus.routes';
 import reservationRoutes from './reservations/reservations.routes';
 import orderRoutes from './orders/orders.routes';
+import { setupSwagger } from './config/swagger';
 
 dotenv.config();
 const app = express();
@@ -29,3 +29,6 @@ if (process.env.NODE_ENV !== 'test') {
 
 
 export default app;
+
+// Setup Swagger documentation
+setupSwagger(app);

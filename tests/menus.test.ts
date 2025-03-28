@@ -1,4 +1,3 @@
-// tests/menus.test.ts
 import request from 'supertest';
 import app from '../src/index';
 import { pool } from '../src/config/db';
